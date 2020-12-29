@@ -3,6 +3,11 @@ PySpikon (a.k.a PySpikeConverter) is a Python-based program that allows you to c
 
 
 PySpikon é um programa baseado em Python que te permite converter arquivos .llsp em arquivos .py, ele usa o *"project.json"* contido em seu .llsp para criar um arquivo Python direto da linha de comando
+
+# Contents
+[Installing (Windows)](### Installing (Windows))
+[Installing (Linux)](### Installing (Linux))
+[Use](### Use)
 ### Installing (Windows)
 
 To install PySpikon go to the releases page and download the .msi file. After downloading, run the file. This window will open:
