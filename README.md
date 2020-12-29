@@ -23,7 +23,7 @@ Now you are able to run PySpikon on Windows
 
 ### Installing (Linux)
 
-Download (Git)[https://git-scm.com/downloads], then run this on shell:
+Download [Git](https://git-scm.com/downloads), then run this on shell:
 ```
 git clone https://github.com/pyjonhact/pyspikon.git
 cd pyspikon
