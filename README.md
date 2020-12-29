@@ -35,7 +35,7 @@ To use it, run:
 ```bash
 pyspikon path-to-file new-file-path
 ```
-Or on linux:
+Or in Linux:
 ```bash
 python setup.py path-to-file new-file-path
 ```
