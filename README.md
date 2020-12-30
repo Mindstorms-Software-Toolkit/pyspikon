@@ -12,18 +12,17 @@ PySpikon é um programa baseado em Python que te permite converter arquivos .lls
 
 To install PySpikon go to the releases page and download the .msi file. After downloading, run the file. This window will open:
 
-![Window 1](https://i.imgur.com/9IGfJOA.png)
+![Imgur](https://i.imgur.com/3ms27y9.png)
 
 Click in **Next >**, now you will select the path where the program will be installed, the default path is Program Files, but you can change.
 
-![Window 2](https://i.imgur.com/FFTkBXO.png)
+![Imgur](https://i.imgur.com/aYwHx2s.png)
 
 After selecting the path click in **Next >** again and then in **Install**, now wait.
 
 You will see the window below after install ends, just click on Finish.
 
-![Window 3](https://i.imgur.com/gYEgGZG.png)
-
+![Imgur](https://i.imgur.com/3ms27y9.png)
 Now you are able to run PySpikon on Windows
 
 ### Installing (Linux)
