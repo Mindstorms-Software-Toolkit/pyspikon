@@ -24,8 +24,41 @@ motor = Motor('A')
 motor_pair = MotorPair('B', 'A')
 
 '''
+    for v in data['targets'][1]['variables']:
+        program=program+(str(data['targets'][1]['variables'][v][0])+"="+str(data['targets'][1]['variables'][v][1]))+'\n'
+    for l in data['targets'][1]['lists']:
+        program=program+(str(data['targets'][1]['lists'][l][0])+"="+str(data['targets'][1]['lists'][l][1]))+'\n'
     #Verifica todos os blocos listados
     for i in data['targets'][1]['blocks']:
+        #Verifica se existe algum comentario para o bloco, se tiver, grava no programa.
+        for comments in data['targets'][1]['comments']:
+            if data['targets'][1]['comments'][comments]['blockId'] == i:
+                program=program+'\n\n#'+data['targets'][1]['comments'][comments]['text'].replace('\n', '\n#')
+        #----VARIABLES/LISTS PARSER/ANALIZADOR DE VARIAVEIS/LISTAS----#
+        if data['targets'][1]['blocks'][i]['opcode'] == "data_setvariableto":
+            variable=str(data['targets'][1]['blocks'][i]['fields']['VARIABLE'][0])
+            value=str(data['targets'][1]['blocks'][i]['inputs']['VALUE'][1][1])
+            program=f"{program}{variable}='{value}'\n" if not value.isnumeric else f"{program}{variable}={value}\n" 
+        if data['targets'][1]['blocks'][i]['opcode'] == "data_changevariableby":
+            variable=str(data['targets'][1]['blocks'][i]['fields']['VARIABLE'][0])
+            value=str(data['targets'][1]['blocks'][i]['inputs']['VALUE'][1][1])
+            program=f"{program}{variable}+='{value}'\n" if not value.isnumeric else f"{program}{variable}+={value}\n" 
+        if data['targets'][1]['blocks'][i]['opcode'] == "data_addtolist":
+            listo=str(data['targets'][1]['blocks'][i]['fields']['LIST'][0])
+            item=str(data['targets'][1]['blocks'][i]['inputs']['ITEM'][1][1])
+            program=f"{program}{listo}.append('{item}')\n"
+        if data['targets'][1]['blocks'][i]['opcode'] == "data_deleteoflist":
+            listo=str(data['targets'][1]['blocks'][i]['fields']['LIST'][0])
+            item=str(int(data['targets'][1]['blocks'][i]['inputs']['INDEX'][1][1])-1)
+            program=f"{program}{listo}.pop({item})\n"
+        if data['targets'][1]['blocks'][i]['opcode'] == "data_deletealloflist":
+            listo=str(data['targets'][1]['blocks'][i]['fields']['LIST'][0])
+            program=f"{program}{listo}=[]\n"
+        if data['targets'][1]['blocks'][i]['opcode'] == "data_insertatlist":
+            listo=str(data['targets'][1]['blocks'][i]['fields']['LIST'][0])
+            item=str(data['targets'][1]['blocks'][i]['inputs']['ITEM'][1][1])
+            index=str(int(data['targets'][1]['blocks'][i]['inputs']['INDEX'][1][1])-1)
+            program=f"{program}{listo}.insert({index},'{item}')\n"
         #Verifica a lista de funções.
         for function in functionslist:
             #Define a lista de inputs.
@@ -57,11 +90,7 @@ motor_pair = MotorPair('B', 'A')
                         #Grava na lista a input se ela não for uma lista
                         else:
                             inputsfunc.append(inputs2)
-                #Verifica se existe algum comentario para o bloco, se tiver, grava no programa.
-                for comments in data['targets'][1]['comments']:
-                    if data['targets'][1]['comments'][comments]['blockId'] == i:
-                        program=program+'\n\n#'+data['targets'][1]['comments'][comments]['text'].replace('\n', '\n#')
-                #Cria uma outra string baseada na função referenta ao bloco.
+                #Cria uma outra string baseada na função referente ao bloco.
                 functionmodify=function[1][:-1]
                 inputsfuncstr=[]
                 #Une a função e as inputs ao programa.
