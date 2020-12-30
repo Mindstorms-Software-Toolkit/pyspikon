@@ -22,7 +22,8 @@ After selecting the path click in **Next >** again and then in **Install**, now 
 
 You will see the window below after install ends, just click on Finish.
 
-![Imgur](https://i.imgur.com/3ms27y9.png)
+![Imgur](https://i.imgur.com/zvwRaH3.png)
+
 Now you are able to run PySpikon on Windows
 
 ### Installing (Linux)
