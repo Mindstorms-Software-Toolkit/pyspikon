@@ -5,7 +5,8 @@
 
 #Importa blibliotecas
 import json
-import numpy
+from numpy import mat,array
+import inputparser as parser
 
 #Define a lista de conversão de funções
 functionslist=[['flippermotor_motorGoDirectionToPosition', 'motor.run_to_position()'], ['flippermotor_motorStartDirection', 'motor.start()'], ['flippermotor_motorSetSpeed', 'motor.set_default_speed()'], ['flippermove_move', 'motor_pair.move()'], ['flippermove_steer', 'motor_pair.move_tank()'], ['flippermove_startSteer', 'motor_pair.start_tank()'], ['flippermove_stopMove', 'motor_pair.stop()'], ['flippermove_movementSpeed', 'motor_pair.set_default_speed()'], ['flippermove_setMovementPair', 'motor_pair = MotorPair()'], ['flippermove_setDistance', 'motor_pair.set_motor_rotation()'], ['flippersound_playSoundUntilDone', 'app.start_sound()'], ['flippersound_playSound', 'app.play_sound()'], ['flippersound_beepForTime', 'hub.speaker.beep()'], ['flippersound_beep', 'hub.speaker.start_beep()'], ['flippersound_stopSound', 'hub.speaker.stop()'], ['control_wait', 'wait_for_seconds()'], ['control_wait_until', 'wait_until()'], ['flippersensors_resetYaw', 'hub.motion_sensor.reset_yaw_angle()'], ['flippersensors_resetTimer', 'timer.reset()'],['flipperdisplay_ledText', 'hub.light_matrix.write()'],['flipperdisplay_displayOff', 'hub.light_matrix.off()'],['flipperdisplay_ledOn', 'hub.light_matrix.set_pixel()'], ['flipperdisplay_centerButtonLight', 'hub.status_light.on()'], ['flipperdisplay_ultrasonicLightUp', 'distance_sensor.light_up()']]
@@ -65,7 +66,7 @@ force = ForceSensor('E')
             program=f"{program}{listo}.insert({index},'{item}')\n"
         #----LIGHT MATRIX PARSER/ANALIZADOR DA MATRIZ DE LUZ----#
         if data['targets'][1]['blocks'][i]['opcode'] == "flipperdisplay_ledImageFor":
-            matrixlight=numpy.mat(numpy.array(list(data['targets'][1]['blocks'][data['targets'][1]['blocks'][i]["inputs"]['MATRIX'][1]]['fields']["field_flipperdisplay_custom-matrix"][0])))
+            matrixlight=mat(array(list(data['targets'][1]['blocks'][data['targets'][1]['blocks'][i]["inputs"]['MATRIX'][1]]['fields']["field_flipperdisplay_custom-matrix"][0])))
             matrixlight=matrixlight.reshape(5,5)
             newmatrixlight=[]
             for ind in range(0,5):
@@ -74,7 +75,7 @@ force = ForceSensor('E')
                 newmatrixlight.append(listmatrix)
             program=program+f"for indexrow, row in enumerate({str(newmatrixlight)}):\n   for indexcol, column in enumerate(row):\n      hub.light_matrix.set_pixel(indexrow, indexcol, brightness=column)\nwait_for_seconds({int(data['targets'][1]['blocks'][i]['inputs']['VALUE'][1][1])})\nhub.light_matrix.off()\n"
         if data['targets'][1]['blocks'][i]['opcode'] == "flipperdisplay_ledImage":
-            matrixlight=numpy.mat(numpy.array(list(data['targets'][1]['blocks'][data['targets'][1]['blocks'][i]["inputs"]['MATRIX'][1]]['fields']["field_flipperdisplay_custom-matrix"][0])))
+            matrixlight=mat(array(list(data['targets'][1]['blocks'][data['targets'][1]['blocks'][i]["inputs"]['MATRIX'][1]]['fields']["field_flipperdisplay_custom-matrix"][0])))
             matrixlight=matrixlight.reshape(5,5)
             newmatrixlight=[]
             for ind in range(0,5):
@@ -98,6 +99,8 @@ force = ForceSensor('E')
                             #Grava as fields do menu seletor na lista de inputs..
                             for field in data['targets'][1]['blocks'][inputs2]['fields']:
                                 inputsfunc.append(data['targets'][1]['blocks'][inputs2]['fields'][field][0])
+                        else:
+                            inputsfunc.append(inputs2)
                     except TypeError:
                         #Verifica se a input é uma lista, e repete o processo de verificação de inputs para cada item nessa lista
                         if isinstance(inputs2, list):
@@ -110,15 +113,66 @@ force = ForceSensor('E')
                                         inputsfunc.append(inputf)
                                 except TypeError:
                                     inputsfunc.append(inputf)
+                        elif isinstance(inputs2, dict):
+                            for inputf in inputs2:
+                                try:
+                                    if inputf in data['targets'][1]['blocks']:
+                                        for field in data['targets'][1]['blocks'][inputf]['fields']:
+                                            inputsfunc.append(data['targets'][1]['blocks'][inputf]['fields'][field][0])
+                                    else:
+                                        inputsfunc.append(inputf)
+                                except TypeError:
+                                    inputsfunc.append(inputf)
                         #Grava na lista a input se ela não for uma lista
                         else:
                             inputsfunc.append(inputs2)
+                #Verifica as fields do bloco.
+                for fields in data['targets'][1]['blocks'][i]['fields']:
+                    #Verifica os valores das fields
+                    fields2=data['targets'][1]['blocks'][i]['fields'][fields][0]
+                    print(fields2)
+                    #Tenta ver se o valor leva a um menu seletor.
+                    try:
+                        if fields2 in data['targets'][1]['blocks']:
+                            #Grava as fields do menu seletor na lista de fields..
+                            for field in data['targets'][1]['blocks'][fields2]['fields']:
+                                inputsfunc.append(data['targets'][1]['blocks'][fields2]['fields'][field][0])
+                        else:
+                            inputsfunc.append(fields2)
+                    except TypeError:
+                        #Verifica se a field é uma lista, e repete o processo de verificação de fields para cada item nessa lista
+                        if isinstance(fields2, list):
+                            for fieldf in fields2:
+                                try:
+                                    if fieldf in data['targets'][1]['blocks']:
+                                        for field in data['targets'][1]['blocks'][fieldf]['fields']:
+                                            inputsfunc.append(data['targets'][1]['blocks'][fieldf]['fields'][field][0])
+                                    else:
+                                        inputsfunc.append(fieldf)
+                                except TypeError:
+                                    inputsfunc.append(fieldf)
+                        elif isinstance(fields2, dict):
+                            for fieldf in fields2:
+                                print(fieldf)
+                                try:
+                                    if fieldf in data['targets'][1]['blocks']:
+                                        for field in data['targets'][1]['blocks'][fieldf]['fields']:
+                                            inputsfunc.append(data['targets'][1]['blocks'][fieldf]['fields'][field][0])
+                                    else:
+                                        inputsfunc.append(fieldf)
+                                except TypeError:
+                                    inputsfunc.append(fieldf)
+                        #Grava na lista a field se ela não for uma lista
+                        else:
+                            inputsfunc.append(fields2)
                 #Cria uma outra string baseada na função referente ao bloco.
                 functionmodify=function[1][:-1]
-                inputsfuncstr=[]
+                #Parse inputs
+                inputsfunc=parser.parse(data['targets'][1]['blocks'][i]['opcode'], inputsfunc)
                 #Une a função e as inputs ao programa.
-                for inputfunc in inputsfunc:
-                    inputsfuncstr.append(str(inputfunc) if not isinstance(inputfunc, str) else "'"+inputfunc+"'")
-                program=program+'\n'+functionmodify+','.join(inputsfuncstr)+')'
+                print(inputsfunc)
+                if inputsfunc == None:
+                    inputsfunc=[]
+                program=program+'\n'+functionmodify+','.join(str(ifunc) for ifunc in inputsfunc)+')'
     #Retorna o programa
     return program
