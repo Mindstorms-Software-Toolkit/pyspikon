@@ -13,35 +13,63 @@ def flippermotor_motorGoDirectionToPosition(inputs):
         inputsnew.append("'"+inputs[2].capitalize()+"'")
     return inputsnew
 def flippermotor_motorStartDirection(inputs):
-    return [inputs[1]]
+    if len(inputs) == 3:
+        return [inputs[0]]
+    else:
+        return [inputs[1]]
 def flippermotor_motorSetSpeed(inputs):
     return [int(inputs[2])]
 def flippermove_move(inputs):
-    inputsnew=[]
-    inputsnew.append(float(inputs[2])*-1 if inputs[0]=='backward' else float(inputs[2]))
-    inputsnew.append("'"+inputs[3]+"'")
-    strings=['forward', 'backward', 'clockwise', 'counterclockwise']
-    values=[0,0,100,-100]
-    inputsnew.append(f'steering={values[strings.index(inputs[0])]}')
+    if len(inputs)==3:  
+        inputsnew=[]
+        inputsnew.append(float(inputs[1])*-1 if inputs[0]=='backward' else float(inputs[1]))
+        inputsnew.append("'"+inputs[2]+"'")
+        strings=['forward', 'backward', 'clockwise', 'counterclockwise']
+        values=[0,0,100,-100]
+        inputsnew.append(f'steering={values[strings.index(inputs[0])]}')
+    else:
+        inputsnew=[]
+        inputsnew.append(float(inputs[2])*-1 if inputs[0]=='backward' else float(inputs[2]))
+        inputsnew.append("'"+inputs[3]+"'")
+        strings=['forward', 'backward', 'clockwise', 'counterclockwise']
+        values=[0,0,100,-100]
+        print(inputs)
+        inputsnew.append(f'steering={values[strings.index(inputs[0])]}')
     return inputsnew
 def flippermove_steer(inputs):
-    inputsnew=[]
-    inputsnew.append(float(inputs[2]))
-    inputsnew.append("'"+inputs[3]+"'")
-    inputsnew.append(f'steering={int(inputs[0])}')
+    if len(inputs)==3:  
+        inputsnew=[]
+        inputsnew.append(float(inputs[1]))
+        inputsnew.append("'"+inputs[2]+"'")
+        inputsnew.append(f'steering={int(inputs[0])}')
+    else:
+        inputsnew=[]
+        inputsnew.append(float(inputs[2]))
+        inputsnew.append("'"+inputs[3]+"'")
+        inputsnew.append(f'steering={int(inputs[0])}')
     return inputsnew
 def flippermove_startSteer(inputs):
-    inputsnew=[]
-    inputsnew.append(f'steering={int(inputs[0])}')
+    if len(inputs)==3:  
+        inputsnew=[]
+        inputsnew.append(f'steering={int(inputs[0])}')
+    else:
+        inputsnew=[]
+        inputsnew.append(f'steering={int(inputs[0])}')
     return inputsnew
 def flippermove_stopMove(inputs):
     pass
 def flippermove_movementSpeed(inputs):
-    return [int(inputs[1])]
+    if len(inputs)==3: 
+        return [int(inputs[1])]
+    else:
+        return [int(inputs[1])]
 def flippermove_setMovementPair(inputs):
     return ["'"+item+"'" for item in list(inputs[0])]
 def flippermove_setDistance(inputs):
-    return [float(inputs[1]), inputs[2]]
+    if len(inputs)==3: 
+        return [float(inputs[1]), inputs[2]]
+    else:
+        return [float(inputs[0]), inputs[1]]
 def flippersound_playSoundUntilDone(inputs):
     return ["'"+eval(inputs[0])['name']+"'"]
 def flippersound_playSound(inputs):
@@ -61,7 +89,7 @@ def flippersensors_resetYaw(inputs):
 def flippersensors_resetTimer(inputs):
     pass
 def flipperdisplay_ledText(inputs):
-    return [inputs[1]]
+    return [inputs[0]]
 def flipperdisplay_displayOff(inputs):
     pass
 def flipperdisplay_ledOn(inputs):
