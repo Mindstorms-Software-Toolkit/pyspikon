@@ -42,7 +42,7 @@ pyspikon path-to-file new-file-path
 ```
 Or in Linux:
 ```bash
-python setup.py path-to-file new-file-path
+python pyspikon.py path-to-file new-file-path
 ```
 The output will be named "output.py"
 
