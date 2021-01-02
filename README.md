@@ -44,5 +44,5 @@ Or in Linux:
 ```bash
 python pyspikon.py path-to-file new-file-path
 ```
-The output will be named "output.py"
+The output will be named "output.py", if you want you can use `--live-editor` to use LIVE EDITOR
 
