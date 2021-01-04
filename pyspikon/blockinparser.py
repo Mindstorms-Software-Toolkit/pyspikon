@@ -5,7 +5,9 @@ def recursion_parse(inputs):
         if c in data['targets'][1]['blocks']:
             values = []
             for v in list(data['targets'][1]['blocks'][c]['inputs'].values()):
-                if type(v[1]) == str:
+                if type(v)==str:
+                    values.append(v)
+                elif type(v[1]) == str:
                     values.append(v[1])
                 else:
                     values.append(v[1][1])
@@ -118,7 +120,6 @@ def flippermotor_speed(inputs):
 
 def parse(opcode, inputs, ifnotfind=None):
     try:
-        # (eval(f'{opcode}({inputs})'))
         return eval(f'{opcode}({inputs})')
-    except ZeroDivisionError:
+    except:
         return ifnotfind

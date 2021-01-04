@@ -218,6 +218,10 @@ force = ForceSensor('E')
             else:
                 for ind, variabler, listr in itertools.zip_longest(itertools.count(), list(data['targets'][1]['variables']), list(data['targets'][1]['lists'])):
                     if variabler==None and listr==None:
+                        if ind == max(0, len(data['targets'][1]['variables'])-1):
+                            secs= str(data['targets'][1]['blocks'][i]['inputs']['VALUE'][1][1])
+                            program = program + \
+                            f'{lineseparator}for indexrow, row in enumerate({str(newmatrixlight)}):{lineseparator}    for indexcol, column in enumerate(row):{lineseparator}      hub.light_matrix.set_pixel(indexrow, indexcol, brightness=column){lineseparator}wait_for_seconds({secs}){lineseparator}hub.light_matrix.off()'
                         break
                     if False if variabler==None else secs == data['targets'][1]['variables'][variabler][0]:
                         program = program + \
@@ -229,6 +233,8 @@ force = ForceSensor('E')
                         break
                     elif ind == len(data['targets'][1]['variables'])-1:
                         secs= str(data['targets'][1]['blocks'][i]['inputs']['VALUE'][1][1])
+                        program = program + \
+                        f'{lineseparator}for indexrow, row in enumerate({str(newmatrixlight)}):{lineseparator}    for indexcol, column in enumerate(row):{lineseparator}      hub.light_matrix.set_pixel(indexrow, indexcol, brightness=column){lineseparator}wait_for_seconds({secs}){lineseparator}hub.light_matrix.off()'
         elif data['targets'][1]['blocks'][i]['opcode'] == 'flipperdisplay_ledImage':
             matrixlight = mat(array(list(data['targets'][1]['blocks'][data['targets'][1]['blocks']
                                                                       [i]['inputs']['MATRIX'][1]]['fields']['field_flipperdisplay_custom-matrix'][0])))
@@ -256,7 +262,7 @@ force = ForceSensor('E')
                             if inputs2 in data['targets'][1]['variables']:
                                 inputsrepl.append((data['targets'][1]['variables'][inputs2][0], len(inputsfunc)))
                                 inputsfunc.append(len(inputsfunc)*123)
-                            if inputs2 in data['targets'][1]['list']:
+                            if inputs2 in data['targets'][1]['lists']:
                                 inputsrepl.append((data['targets'][1]['lists'][inputs2][0], len(inputsfunc)))
                                 inputsfunc.append(len(inputsfunc)*123)
                             if inputs2 in data['targets'][1]['blocks']:
@@ -389,68 +395,87 @@ force = ForceSensor('E')
                 times = str(data['targets'][1]['blocks']
                             [i]['inputs']['TIMES'][1][1])
                 program = program+f"{lineseparator}for c in range({times}):"
-                iif = data['targets'][1]['blocks'][i]['inputs']['SUBSTACK'][1]
-                while iif != None:
-                    program = program+functionparse(iif, "", "\n    ") if functionparse(
-                        iif, "", "\n    ") != "" and functionparse(
-                        iif, "", "\n    ") != None else control_parser(iif, program, lineseparator+"    ")
-                    iif = data['targets'][1]['blocks'][iif]['next']
+                try:
+                    iif = data['targets'][1]['blocks'][i]['inputs']['SUBSTACK'][1]
+                    while iif != None:
+                        program = program+functionparse(iif, "", lineseparator+"    ") if functionparse(
+                            iif, "", lineseparator+"    ") != "" and functionparse(
+                            iif, "", lineseparator+"    ") != None else control_parser(iif, program, lineseparator+"    ")
+                        iif = data['targets'][1]['blocks'][iif]['next']
+                except:
+                    pass
             if data['targets'][1]['blocks'][i]['opcode'] == "control_forever":
                 program = program+f"{lineseparator}while True:"
-                iif = data['targets'][1]['blocks'][i]['inputs']['SUBSTACK'][1]
-                while iif != None and iif != "":
-                    program = program+functionparse(iif, "", "\n    ") if functionparse(
-                        iif, "", "\n    ") != "" and functionparse(
-                        iif, "", "\n    ") != None else control_parser(iif, program, lineseparator+"    ")
-                    iif = data['targets'][1]['blocks'][iif]['next']
+                try:
+                    iif = data['targets'][1]['blocks'][i]['inputs']['SUBSTACK'][1]
+                    while iif != None:
+                        program = program+functionparse(iif, "", lineseparator+"    ") if functionparse(
+                            iif, "", lineseparator+"    ") != "" and functionparse(
+                            iif, "", lineseparator+"    ") != None else control_parser(iif, program, lineseparator+"    ")
+                        iif = data['targets'][1]['blocks'][iif]['next']
+                except:
+                    pass
             if data['targets'][1]['blocks'][i]['opcode'] == "control_if" or data['targets'][1]['blocks'][i]['opcode'] == "control_if_else":
                 try:
                     inputscondition = list(
                         data['targets'][1]['blocks'][data['targets'][1]['blocks'][i]['inputs']['CONDITION'][1]]['inputs'].values())
                     fieldscondition = list(
                         data['targets'][1]['blocks'][data['targets'][1]['blocks'][i]['inputs']['CONDITION'][1]]['fields'].values())
-                    inputscondition = list([ic[1][1]
+                    inputscondition = list([ic[1] if ic[1] == str else ic[1][1]
                                             for ic in inputscondition])
-                    fieldscondition = list([ic[0][0]
-                                            for ic in fieldscondition])
-                    condition = bparser.parse(data['targets'][1]['blocks'][data['targets'][1]['blocks']
-                                                                           [i]['inputs']['CONDITION'][1]]['opcode'], inputscondition+fieldscondition)
-                except:
-                    condition = ""
-                program = program+f"{lineseparator}if {''.join(condition)}:"
-                iif = data['targets'][1]['blocks'][i]['inputs']['SUBSTACK'][1]
-                while iif != None:
-                    program = program+functionparse(iif, "", "\n    ") if functionparse(
-                    iif, "", "\n    ")!="" else control_parser(iif, program, lineseparator+"    ")
-                    iif = data['targets'][1]['blocks'][iif]['next']
-                if data['targets'][1]['blocks'][i]['opcode'] == "control_if_else":
-                    program = program+f"{lineseparator}else:"
-                    iif = data['targets'][1]['blocks'][i]['inputs']['SUBSTACK2'][1]
-                    while iif != None:
-                        program = program+functionparse(iif, "", "\n    ") if functionparse(
-                            iif, "", "\n    ") != "" and functionparse(
-                            iif, "", "\n    ") != None else control_parser(iif, program, lineseparator+"    ")
-                        iif = data['targets'][1]['blocks'][iif]['next']
-            if data['targets'][1]['blocks'][i]['opcode'] == "control_repeat_until":
-                try:
-                    inputscondition = list(
-                        data['targets'][1]['blocks'][data['targets'][1]['blocks'][i]['inputs']['CONDITION'][1]]['inputs'].values())
-                    fieldscondition = list(
-                        data['targets'][1]['blocks'][data['targets'][1]['blocks'][i]['inputs']['CONDITION'][1]]['fields'].values())
-                    inputscondition = list([ic[1][1]
-                                            for ic in inputscondition])
-                    fieldscondition = list([ic[0][0]
+                    fieldscondition = list([ic[0] if ic[0] == str else ic[0][0]
                                             for ic in fieldscondition])
                     condition = bparser.parse(data['targets'][1]['blocks'][data['targets'][1]['blocks']
                                                                            [i]['inputs']['CONDITION'][1]]['opcode'], inputscondition+fieldscondition)
                 except:
                     condition = ""
                 program = program + \
-                    f"{lineseparator}while not {''.join(condition)}:"
-                iif = data['targets'][1]['blocks'][i]['inputs']['SUBSTACK'][1]
-                while iif != None:
-                    program = program+functionparse(iif, "", "\n    ")
-                    iif = data['targets'][1]['blocks'][iif]['next']
+                    f"{lineseparator}if {condition if type(condition)!=list else ''.join(condition)}:"
+                try:
+                    iif = data['targets'][1]['blocks'][i]['inputs']['SUBSTACK'][1]
+                    while iif != None:
+                        program = program+functionparse(iif, "", lineseparator+"    ") if functionparse(
+                            iif, "", lineseparator+"    ") != "" and functionparse(
+                            iif, "", lineseparator+"    ") != None else control_parser(iif, program, lineseparator+"    ")
+                        iif = data['targets'][1]['blocks'][iif]['next']
+                except KeyError:
+                    pass
+                if data['targets'][1]['blocks'][i]['opcode'] == "control_if_else":
+                    program = program+f"{lineseparator}else:"
+                    try:
+                        iif = data['targets'][1]['blocks'][i]['inputs']['SUBSTACK2'][1]
+                        while iif != None:
+                            program = program+functionparse(iif, "", lineseparator+"    ") if functionparse(
+                                iif, "", lineseparator) != "" and functionparse(
+                                iif, "", lineseparator) != None else control_parser(iif, program, lineseparator+"    ")
+                            iif = data['targets'][1]['blocks'][iif]['next']
+                    except:
+                        pass
+            if data['targets'][1]['blocks'][i]['opcode'] == "control_repeat_until":
+                try:
+                    inputscondition = list(
+                        data['targets'][1]['blocks'][data['targets'][1]['blocks'][i]['inputs']['CONDITION'][1]]['inputs'].values())
+                    fieldscondition = list(
+                        data['targets'][1]['blocks'][data['targets'][1]['blocks'][i]['inputs']['CONDITION'][1]]['fields'].values())
+                    inputscondition = list([ic[1] if ic[1] == str else ic[1][1]
+                                            for ic in inputscondition])
+                    fieldscondition = list([ic[0] if ic[0] == str else ic[0][0]
+                                            for ic in fieldscondition])
+                    condition = bparser.parse(data['targets'][1]['blocks'][data['targets'][1]['blocks']
+                                                                           [i]['inputs']['CONDITION'][1]]['opcode'], inputscondition+fieldscondition)
+                except:
+                    condition = ""
+                program = program + \
+                    f"{lineseparator}while not {condition if type(condition)!=list else ''.join(condition)}:"
+                try:
+                    iif = data['targets'][1]['blocks'][i]['inputs']['SUBSTACK'][1]
+                    while iif != None:
+                        program = program+functionparse(iif, "", lineseparator+"    ") if functionparse(
+                            iif, "", lineseparator+"    ") != "" and functionparse(
+                            iif, "", lineseparator+"    ") != None else control_parser(iif, program, lineseparator+"    ")
+                        iif = data['targets'][1]['blocks'][iif]['next']
+                except KeyError:
+                    pass
             return program
         fparseresults=functionparse(i, program)
         cparseresults=control_parser(i, program)
