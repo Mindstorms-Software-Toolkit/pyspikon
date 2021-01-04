@@ -1,48 +1,76 @@
-# **PySpikon**
+# **PySpikon** 
 PySpikon (a.k.a PySpikeConverter) is a Python-based program that allows you to convert .llsp files into .py files, it uses the *"project.json"* contained into your .llsp to create a Python file directly from the command-line.
 
 
 PySpikon é um programa baseado em Python que te permite converter arquivos .llsp em arquivos .py, ele usa o *"project.json"* contido em seu .llsp para criar um arquivo Python direto da linha de comando
 
+# First version released: 0.6.1!
+
+This version is stable, but its still not complete.
+
 # Contents
-1. [Installing (Windows)](#installing-windows)
-2. [Installing (Linux)](#installing-linux)
-3. [Use](#use)
-### Installing (Windows)
+1 [Setup](#setup)
+&nbsp;&nbsp;&nbsp;&nbsp;1.1. [Installing](#installing)
 
-To install PySpikon go to the releases page and download the .msi file. After downloading, run the file. This window will open:
+&nbsp;&nbsp;&nbsp;&nbsp;1.2. [Using](#using)
 
-![Imgur](https://i.imgur.com/3ms27y9.png)
+2 [Characteristics](#characteristics)
 
-Click in **Next >**, now you will select the path where the program will be installed, the default path is Program Files, but you can change.
+&nbsp;&nbsp;&nbsp;&nbsp;2.1 [Supported Robots](#supported-robots)
 
-![Imgur](https://i.imgur.com/aYwHx2s.png)
+&nbsp;&nbsp;&nbsp;&nbsp;2.2 [Features and Supported Blocks](#features-and-supported-blocks)
 
-After selecting the path click in **Next >** again and then in **Install**, now wait.
+3 [Live Editor](#live-editor)
 
-You will see the window below after install ends, just click on Finish.
+4 [Contributing and Crediting](#contributing-and-crediting)
 
-![Imgur](https://i.imgur.com/zvwRaH3.png)
+# Setup
 
-Now you are able to run PySpikon on Windows
+### Installing
 
-### Installing (Linux)
-
-Download [Git](https://git-scm.com/downloads), then run this on shell:
+Download [Git](https://git-scm.com/downloads), then run this in cmd/shell:
 ```
 git clone https://github.com/pyjonhact/pyspikon.git
-cd pyspikon
 ```
 Now you are able to run PySpikon on Linux
 
-### Use
+### Using
 To use it, run:
 ```bash
-pyspikon path-to-file new-file-path
-```
-Or in Linux:
-```bash
+cd pyspikon
 python pyspikon.py path-to-file new-file-path
 ```
-The output will be named "output.py", if you want you can use `--live-editor` to use LIVE EDITOR
+The output will be named "output.py"
 
+# Characteristics
+
+### Supported Robots
+- [ ] Lego® Mindstorms® NXT (9797)
+- [ ] Lego® Mindstorms® EV3 (45544)
+- [X] Lego® Education® Spike™ Prime (45678)
+- [ ] Lego® Mindstorms® Robot Inventor (51515)
+
+### Features and Supported Blocks
+PySpikon supports almost all blocks from LEGO Education SPIKE, except for Events and MyBlocks.
+| Blocks | Supported? |
+| --- | --- |
+| Individual Motors | Yes! |
+| Motor Pairs | Yes! |
+| Light Blocks | Yes! |
+| Sound Blocks | Yes! |
+| Events | No |
+| Control | Yes! |
+| Sensors | So-so |
+| Operators | So-so |
+| Variables | Yes! |
+| MyBlocks | No |
+
+PySpikon has features like Live Editor, i will explain better in next sections
+
+# Live Editor
+Live Editor, is the real-time converter of PySpikon, each second your code output is updated, to use it type `--live-editor` in the end of your command.
+
+![Demo of Live Editor](https://i.imgur.com/2Ssoaz6.gif)
+
+# Contributing and Crediting
+Please credit this repo if you create a modified version and publishED it. If you find any bug report in Issues, if you have a suggestion, post it in Disscussion. 
