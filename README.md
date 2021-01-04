@@ -69,7 +69,7 @@ PySpikon supports almost all blocks from LEGO Education SPIKE, except for Events
 PySpikon has features like Live Editor, i will explain better in next sections
 
 # Live Editor
-Live Editor, is the real-time converter of PySpikon, each second your code output is updated, to use it type `--live-editor` in the end of your command.
+Live Editor is the real-time converter of PySpikon, each second your code output is updated, to use it type `--live-editor` in the end of your command.
 
 ![Demo of Live Editor](https://i.imgur.com/2Ssoaz6.gif)
 
