@@ -10,6 +10,7 @@ This version is stable, but its still not complete.
 
 # Contents
 1 [Setup](#setup)
+
 &nbsp;&nbsp;&nbsp;&nbsp;1.1. [Installing](#installing)
 
 &nbsp;&nbsp;&nbsp;&nbsp;1.2. [Using](#using)
