@@ -1,4 +1,7 @@
 # **PySpikon** 
+
+![PySpikon - Python to Spike converter command-line program and library](https://i.imgur.com/a3p47S7.png)
+
 PySpikon (a.k.a PySpikeConverter) is a Python-based program that allows you to convert .llsp files into .py files, it uses the *"project.json"* contained into your .llsp to create a Python file directly from the command-line.
 
 
@@ -29,17 +32,15 @@ This version is stable, but its still not complete.
 
 ### Installing
 
-Download [Git](https://git-scm.com/downloads), then run this in cmd/shell:
-```
-git clone https://github.com/pyjonhact/pyspikon.git
-```
-Now you are able to run PySpikon on Linux
+You can download PySpikon M.I.A setup [here](https://pyjonhact.github.io/MindstormsSoftwareToolkit/downloads/).*
+
+**OBS: To run it, you need Python 3.6+*
 
 ### Using
-To use it, run:
+To use it, go to the folder where you installed PySpikon, then run:
 ```bash
-cd pyspikon
-python pyspikon.py path-to-file new-file-path
+cd pyspikon/pyspikon
+python pyspikon.py path-to-file new-file-path [--live-editor]
 ```
 The output will be named "output.py"
 
