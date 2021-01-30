@@ -74,5 +74,9 @@ Live Editor is the real-time converter of PySpikon, each second your code output
 
 ![Demo of Live Editor](https://i.imgur.com/2Ssoaz6.gif)
 
-# Contributing and Crediting
-Please credit this repo if you create a modified version and publishED it. If you find any bug report in Issues, if you have a suggestion, post it in Disscussion. 
+# License
+Here is GPL v3 (PySpikon's license) in a nutshell:
+* You can copy and modify this program (fork).
+* But you need to credit it.
+* If you use it in a closed-source project, you need to change your license to GPL v3.
+* If you break this rules you will lose the rights, except if you fix it.
