@@ -11,10 +11,10 @@ import os
 # Define a função de extração.
 
 
-def extractandopen(directory):
+def extractandopen(directory, origin):
     # Copia o arquivo como .zip e extrai o arquivo scratch.sb3
-    shutil.copyfile(directory, directory.replace('.llsp', '.zip'))
-    with ZipFile(directory.replace('.llsp', '.zip'), 'r') as zip:
+    shutil.copyfile(directory, directory.replace(origin, '.zip'))
+    with ZipFile(directory.replace(origin, '.zip'), 'r') as zip:
         zip.extract('scratch.sb3')
     # Deleta o arquivo
     os.remove(directory.replace('.llsp', '.zip'))

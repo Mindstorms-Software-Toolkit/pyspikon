@@ -1,0 +1,7 @@
+{
+    "version":"0.7.0",
+    "codename":"Caribbean",
+    "dependencies":{
+        "numpy":"1.19.3"
+    }
+}

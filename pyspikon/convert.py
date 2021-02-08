@@ -16,15 +16,13 @@ functionslist = [['flippermotor_motorGoDirectionToPosition', 'motor.run_to_posit
 # Define a função de conversão
 
 
-def convert(jsonobj):
+def convert(jsonobj, codestart):
     # Carrega dados
     data = json.load(jsonobj)
     # Define a base do programa .py
-    program = '''from spike import PrimeHub, LightMatrix, Button, StatusLight, ForceSensor, MotionSensor, Speaker, ColorSensor, App, DistanceSensor, Motor, MotorPair
-from spike.control import wait_for_seconds, wait_until, Timer
-from math import *
+    program = codestart+'''
+import uasyncio as asyncio
 
-hub = PrimeHub() 
 app = App()
 motor = Motor('A')
 motor_pair = MotorPair('B', 'A')
@@ -34,7 +32,7 @@ force = ForceSensor('E')
 
 '''
 
-    def functionparse(i, program, lineseparator='\n'):
+    def functionparse(i, program, lineseparator='\n    '):
         for comments in data['targets'][1]['comments']:
             if data['targets'][1]['comments'][comments]['blockId'] == i:
                 program = program+f'{lineseparator}{lineseparator}#' + data['targets'][1]['comments'][comments]['text'].replace('\n', f'{lineseparator}#')
@@ -66,7 +64,7 @@ force = ForceSensor('E')
                         break
                     elif ind == len(data['targets'][1]['variables'])-1:
                         value = str(data['targets'][1]['blocks'][i]['inputs']['VALUE'][1][1])
-                        program = f"{program}{lineseparator}{variable}='{value}'" if not value.isnumeric() else f"{program}{variable}={value}{lineseparator}"
+                        program = f"{program}{lineseparator}{variable}='{value}'" if not value.isnumeric() else f"{program}{lineseparator}{variable}={value}"
         elif data['targets'][1]['blocks'][i]['opcode'] == 'data_changevariableby':
             variable = str(data['targets'][1]['blocks']
                            [i]['fields']['VARIABLE'][0])
@@ -246,6 +244,8 @@ force = ForceSensor('E')
                 newmatrixlight.append(listmatrix)
             program = program + \
                 f'{lineseparator}for indexrow, row in enumerate({str(newmatrixlight)}):{lineseparator}   for indexcol, column in enumerate(row):{lineseparator}      hub.light_matrix.set_pixel(indexrow, indexcol, brightness=column){lineseparator}'
+        elif data['targets'][1]['blocks'][i]['opcode'] == 'event_broadcast':
+            program=f"{program}{lineseparator}await {data['targets'][1]['blocks'][i]['inputs']['BROADCAST_INPUT'][1][1]}()"
         else:
             for function in functionslist:
                 # Define a lista de inputs.
@@ -260,11 +260,11 @@ force = ForceSensor('E')
                         # Tenta ver se o valor leva a um menu seletor.
                         try:
                             if inputs2 in data['targets'][1]['variables']:
-                                inputsrepl.append((data['targets'][1]['variables'][inputs2][0], len(inputsfunc)))
-                                inputsfunc.append(len(inputsfunc)*123)
+                                inputsfunc.append((len(inputsfunc)+1)*123)
+                                inputsrepl.append((data['targets'][1]['variables'][inputs2][0], (len(inputsfunc)+1)*123))
                             if inputs2 in data['targets'][1]['lists']:
-                                inputsrepl.append((data['targets'][1]['lists'][inputs2][0], len(inputsfunc)))
-                                inputsfunc.append(len(inputsfunc)*123)
+                                inputsfunc.append((len(inputsfunc)+1)*123)
+                                inputsrepl.append((data['targets'][1]['lists'][inputs2][0], (len(inputsfunc)+1)*123))
                             if inputs2 in data['targets'][1]['blocks']:
                                 valuestest = []
                                 try:
@@ -291,8 +291,9 @@ force = ForceSensor('E')
                                     data['targets'][1]['blocks'][inputs2]['opcode'], valuestest)
                                 if valuesparsed != None:
                                     for field in valuesparsed:
-                                        inputsrepl.append((field, len(inputsfunc)))
-                                        inputsfunc.append(len(inputsfunc)*123)
+                                        inputsrepl.append((field, (len(inputsfunc)+1)*123))
+                                        inputsfunc.append((len(inputsfunc)+1)*123)
+                                        print((len(inputsfunc)+1)*123, inputsfunc)
                                 else:
                                     # Grava as fields do menu seletor na lista de inputs.
                                     for field in valuestest:
@@ -375,8 +376,13 @@ force = ForceSensor('E')
                     if inputsfunc == None:
                         inputsfunc = []
                     if inputsrepl != None:
-                        for item in inputsrepl:
-                            inputsfunc[inputsfunc.index(item[1]*123)] = item[0]
+                        print(inputsfunc, inputsrepl)
+                        if len(inputsfunc)!=0:
+                            for item in inputsrepl:
+                                inputsfunc[inputsfunc.index(item[1]*123)] = item[0]
+                        else:
+                            for item in inputsrepl:
+                                inputsfunc.append(item[0])
                     program = program+lineseparator+functionmodify + \
                         ','.join(str(ifunc) for ifunc in inputsfunc)+')'
         return program
@@ -386,100 +392,115 @@ force = ForceSensor('E')
     for l in data['targets'][1]['lists']:
         program = program+(str(data['targets'][1]['lists'][l][0]) +
                            "="+str(data['targets'][1]['lists'][l][1]))+'\n'
+    def control_parser(i, program, lineseparator='\n    '):
+        if data['targets'][1]['blocks'][i]['opcode'] == "control_repeat":
+            times = str(data['targets'][1]['blocks']
+                        [i]['inputs']['TIMES'][1][1])
+            program = program+f"{lineseparator}for c in range({times}):"
+            try:
+                iif = data['targets'][1]['blocks'][i]['inputs']['SUBSTACK'][1]
+                while iif != None:
+                    program = program+functionparse(iif, "", lineseparator+"    ") if functionparse(
+                        iif, "", lineseparator+"    ") != "" and functionparse(
+                        iif, "", lineseparator+"    ") != None else control_parser(iif, program, lineseparator+"    ")
+                    iif = data['targets'][1]['blocks'][iif]['next']
+            except:
+                pass
+        if data['targets'][1]['blocks'][i]['opcode'] == "control_forever":
+            program = program+f"{lineseparator}while True:"
+            try:
+                iif = data['targets'][1]['blocks'][i]['inputs']['SUBSTACK'][1]
+                while iif != None:
+                    program = program+functionparse(iif, "", lineseparator+"    ") if functionparse(
+                        iif, "", lineseparator+"    ") != "" and functionparse(
+                        iif, "", lineseparator+"    ") != None else control_parser(iif, program, lineseparator+"    ")
+                    iif = data['targets'][1]['blocks'][iif]['next']
+            except:
+                pass
+        if data['targets'][1]['blocks'][i]['opcode'] == "control_if" or data['targets'][1]['blocks'][i]['opcode'] == "control_if_else":
+            try:
+                inputscondition = list(
+                    data['targets'][1]['blocks'][data['targets'][1]['blocks'][i]['inputs']['CONDITION'][1]]['inputs'].values())
+                fieldscondition = list(
+                    data['targets'][1]['blocks'][data['targets'][1]['blocks'][i]['inputs']['CONDITION'][1]]['fields'].values())
+                inputscondition = list([ic[1] if ic[1] == str else ic[1][1]
+                                        for ic in inputscondition])
+                fieldscondition = list([ic[0] if ic[0] == str else ic[0][0]
+                                        for ic in fieldscondition])
+                condition = bparser.parse(data['targets'][1]['blocks'][data['targets'][1]['blocks']
+                                                                        [i]['inputs']['CONDITION'][1]]['opcode'], inputscondition+fieldscondition)
+            except:
+                condition = ""
+            program = program + \
+                f"{lineseparator}if {condition if type(condition)!=list else ''.join(condition)}:"
+            try:
+                iif = data['targets'][1]['blocks'][i]['inputs']['SUBSTACK'][1]
+                while iif != None:
+                    program = program+functionparse(iif, "", lineseparator+"    ") if functionparse(
+                        iif, "", lineseparator+"    ") != "" and functionparse(
+                        iif, "", lineseparator+"    ") != None else control_parser(iif, program, lineseparator+"    ")
+                    iif = data['targets'][1]['blocks'][iif]['next']
+            except KeyError:
+                pass
+            if data['targets'][1]['blocks'][i]['opcode'] == "control_if_else":
+                program = program+f"{lineseparator}else:"
+                try:
+                    iif = data['targets'][1]['blocks'][i]['inputs']['SUBSTACK2'][1]
+                    while iif != None:
+                        program = program+functionparse(iif, "", lineseparator+"    ") if functionparse(
+                            iif, "", lineseparator) != "" and functionparse(
+                            iif, "", lineseparator) != None else control_parser(iif, program, lineseparator+"    ")
+                        iif = data['targets'][1]['blocks'][iif]['next']
+                except:
+                    pass
+        if data['targets'][1]['blocks'][i]['opcode'] == "control_repeat_until":
+            try:
+                inputscondition = list(
+                    data['targets'][1]['blocks'][data['targets'][1]['blocks'][i]['inputs']['CONDITION'][1]]['inputs'].values())
+                fieldscondition = list(
+                    data['targets'][1]['blocks'][data['targets'][1]['blocks'][i]['inputs']['CONDITION'][1]]['fields'].values())
+                inputscondition = list([ic[1] if ic[1] == str else ic[1][1]
+                                        for ic in inputscondition])
+                fieldscondition = list([ic[0] if ic[0] == str else ic[0][0]
+                                        for ic in fieldscondition])
+                condition = bparser.parse(data['targets'][1]['blocks'][data['targets'][1]['blocks']
+                                                                        [i]['inputs']['CONDITION'][1]]['opcode'], inputscondition+fieldscondition)
+            except:
+                condition = ""
+            program = program + \
+                f"{lineseparator}while not {condition if type(condition)!=list else ''.join(condition)}:"
+            try:
+                iif = data['targets'][1]['blocks'][i]['inputs']['SUBSTACK'][1]
+                while iif != None:
+                    program = program+functionparse(iif, "", lineseparator+"    ") if functionparse(
+                        iif, "", lineseparator+"    ") != "" and functionparse(
+                        iif, "", lineseparator+"    ") != None else control_parser(iif, program, lineseparator+"    ")
+                    iif = data['targets'][1]['blocks'][iif]['next']
+            except KeyError:
+                pass
+        return program
     # Verifica todos os blocos listados
-    i = list(data['targets'][1]['blocks'].keys())[0]
-    while i != None:
-        # Verifica se existe algum comentario para o bloco, se tiver, grava no programa.
-        def control_parser(i, program, lineseparator='\n'):
-            if data['targets'][1]['blocks'][i]['opcode'] == "control_repeat":
-                times = str(data['targets'][1]['blocks']
-                            [i]['inputs']['TIMES'][1][1])
-                program = program+f"{lineseparator}for c in range({times}):"
-                try:
-                    iif = data['targets'][1]['blocks'][i]['inputs']['SUBSTACK'][1]
-                    while iif != None:
-                        program = program+functionparse(iif, "", lineseparator+"    ") if functionparse(
-                            iif, "", lineseparator+"    ") != "" and functionparse(
-                            iif, "", lineseparator+"    ") != None else control_parser(iif, program, lineseparator+"    ")
-                        iif = data['targets'][1]['blocks'][iif]['next']
-                except:
-                    pass
-            if data['targets'][1]['blocks'][i]['opcode'] == "control_forever":
-                program = program+f"{lineseparator}while True:"
-                try:
-                    iif = data['targets'][1]['blocks'][i]['inputs']['SUBSTACK'][1]
-                    while iif != None:
-                        program = program+functionparse(iif, "", lineseparator+"    ") if functionparse(
-                            iif, "", lineseparator+"    ") != "" and functionparse(
-                            iif, "", lineseparator+"    ") != None else control_parser(iif, program, lineseparator+"    ")
-                        iif = data['targets'][1]['blocks'][iif]['next']
-                except:
-                    pass
-            if data['targets'][1]['blocks'][i]['opcode'] == "control_if" or data['targets'][1]['blocks'][i]['opcode'] == "control_if_else":
-                try:
-                    inputscondition = list(
-                        data['targets'][1]['blocks'][data['targets'][1]['blocks'][i]['inputs']['CONDITION'][1]]['inputs'].values())
-                    fieldscondition = list(
-                        data['targets'][1]['blocks'][data['targets'][1]['blocks'][i]['inputs']['CONDITION'][1]]['fields'].values())
-                    inputscondition = list([ic[1] if ic[1] == str else ic[1][1]
-                                            for ic in inputscondition])
-                    fieldscondition = list([ic[0] if ic[0] == str else ic[0][0]
-                                            for ic in fieldscondition])
-                    condition = bparser.parse(data['targets'][1]['blocks'][data['targets'][1]['blocks']
-                                                                           [i]['inputs']['CONDITION'][1]]['opcode'], inputscondition+fieldscondition)
-                except:
-                    condition = ""
-                program = program + \
-                    f"{lineseparator}if {condition if type(condition)!=list else ''.join(condition)}:"
-                try:
-                    iif = data['targets'][1]['blocks'][i]['inputs']['SUBSTACK'][1]
-                    while iif != None:
-                        program = program+functionparse(iif, "", lineseparator+"    ") if functionparse(
-                            iif, "", lineseparator+"    ") != "" and functionparse(
-                            iif, "", lineseparator+"    ") != None else control_parser(iif, program, lineseparator+"    ")
-                        iif = data['targets'][1]['blocks'][iif]['next']
-                except KeyError:
-                    pass
-                if data['targets'][1]['blocks'][i]['opcode'] == "control_if_else":
-                    program = program+f"{lineseparator}else:"
-                    try:
-                        iif = data['targets'][1]['blocks'][i]['inputs']['SUBSTACK2'][1]
-                        while iif != None:
-                            program = program+functionparse(iif, "", lineseparator+"    ") if functionparse(
-                                iif, "", lineseparator) != "" and functionparse(
-                                iif, "", lineseparator) != None else control_parser(iif, program, lineseparator+"    ")
-                            iif = data['targets'][1]['blocks'][iif]['next']
-                    except:
-                        pass
-            if data['targets'][1]['blocks'][i]['opcode'] == "control_repeat_until":
-                try:
-                    inputscondition = list(
-                        data['targets'][1]['blocks'][data['targets'][1]['blocks'][i]['inputs']['CONDITION'][1]]['inputs'].values())
-                    fieldscondition = list(
-                        data['targets'][1]['blocks'][data['targets'][1]['blocks'][i]['inputs']['CONDITION'][1]]['fields'].values())
-                    inputscondition = list([ic[1] if ic[1] == str else ic[1][1]
-                                            for ic in inputscondition])
-                    fieldscondition = list([ic[0] if ic[0] == str else ic[0][0]
-                                            for ic in fieldscondition])
-                    condition = bparser.parse(data['targets'][1]['blocks'][data['targets'][1]['blocks']
-                                                                           [i]['inputs']['CONDITION'][1]]['opcode'], inputscondition+fieldscondition)
-                except:
-                    condition = ""
-                program = program + \
-                    f"{lineseparator}while not {condition if type(condition)!=list else ''.join(condition)}:"
-                try:
-                    iif = data['targets'][1]['blocks'][i]['inputs']['SUBSTACK'][1]
-                    while iif != None:
-                        program = program+functionparse(iif, "", lineseparator+"    ") if functionparse(
-                            iif, "", lineseparator+"    ") != "" and functionparse(
-                            iif, "", lineseparator+"    ") != None else control_parser(iif, program, lineseparator+"    ")
-                        iif = data['targets'][1]['blocks'][iif]['next']
-                except KeyError:
-                    pass
-            return program
-        fparseresults=functionparse(i, program)
-        cparseresults=control_parser(i, program)
-        program = fparseresults if fparseresults!=program else cparseresults if cparseresults!=program else program
-        i = data['targets'][1]['blocks'][i]['next']
+    events=['flipperevents_whenProgramStarts', 'flipperevents_whenColor', 'flipperevents_whenPressed', 'flipperevents_whenDistance', 'flipperevents_whenOrientation', 'flipperevents_whenGesture', 'flipperevents_whenButton', 'flipperevents_whenTimer', 'flipperevents_whenCondition']
+    eventkeys=[]
+    eventnames=[]
+    for block in list(data['targets'][1]['blocks'].keys()):
+        if data['targets'][1]['blocks'][block]['opcode'] in events:
+            eventkeys.append(block)
+            number=1
+            while data['targets'][1]['blocks'][block]['opcode'].replace('flipperevents_', '')+str(number) in eventnames:
+                number+=1
+            eventnames.append(data['targets'][1]['blocks'][block]['opcode'].replace('flipperevents_', '')+str(number))
+        if data['targets'][1]['blocks'][block]['opcode'] == 'event_whenbroadcastreceived':
+            eventnames.append(data['targets'][1]['blocks'][block]['fields']['BROADCAST_OPTION'][0])
+            eventkeys.append(block)
+    for key, name in zip(eventkeys, eventnames):
+        i=key
+        program=f"{program}\nasync def {name}():"
+        while i != None:
+            # Verifica se existe algum comentario para o bloco, se tiver, grava no programa.
+            fparseresults=functionparse(i, program)
+            cparseresults=control_parser(i, program)
+            program = fparseresults if fparseresults!=program else cparseresults if cparseresults!=program else program
+            i = data['targets'][1]['blocks'][i]['next']
     # Retorna o programa
     return program

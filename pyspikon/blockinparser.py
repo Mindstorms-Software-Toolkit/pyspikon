@@ -1,4 +1,4 @@
-import json
+import json, ast
 def recursion_parse(inputs):
     for i, c in enumerate(inputs):
         data = json.load(open('project.json'))
@@ -16,14 +16,12 @@ def recursion_parse(inputs):
     return inputs
 def operator_add(inputs):
     # (inputs)
-    for i, c in enumerate(inputs):
-        recursion_parse(inputs)
-        #(parse(data['targets'][1]['blocks'][c]['opcode'], values))
+    recursion_parse(inputs)
+    #(parse(data['targets'][1]['blocks'][c]['opcode'], values))
     # (inputs)
     return [inputs[0]+"+"+inputs[1]]
 def operator_subtract(inputs):
-    for i, c in enumerate(inputs):
-        recursion_parse(inputs)
+    recursion_parse(inputs)
     return [inputs[0]+"-"+inputs[1]]
 def operator_multiply(inputs):
     recursion_parse(inputs)
@@ -120,6 +118,6 @@ def flippermotor_speed(inputs):
 
 def parse(opcode, inputs, ifnotfind=None):
     try:
-        return eval(f'{opcode}({inputs})')
+        return ast.literal_eval(f'{opcode}({inputs})')
     except:
         return ifnotfind

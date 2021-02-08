@@ -2,6 +2,7 @@
                                                                                 
 #INPUT PARSER - ANALIZADOR DE CÓDIGOS
 #pyjonhact - 2020 | License GNU GPL v3
+import ast
 
 def flippermotor_motorGoDirectionToPosition(inputs):
     inputsnew=[]
@@ -18,9 +19,9 @@ def flippermotor_motorSetSpeed(inputs):
 def flippermove_move(inputs):
     checkin=4-len(inputs)
     inputsnew=[]
-    inputsnew.append(float(inputs[2-checkin])*-1 if inputs[0]=='backward' else float(inputs[2-checkin]))
+    inputsnew.append(float(inputs[2-checkin])*-1 if inputs[0]=='back' else float(inputs[2-checkin]))
     inputsnew.append("'"+inputs[3-checkin]+"'")
-    strings=['forward', 'backward', 'clockwise', 'counterclockwise']
+    strings=['forward', 'back', 'clockwise', 'counterclockwise']
     values=[0,0,100,-100]
     inputsnew.append(f'steering={values[strings.index(inputs[0])]}')
     return inputsnew
@@ -45,9 +46,9 @@ def flippermove_setDistance(inputs):
     checkin=4-len(inputs)
     return [float(inputs[0+checkin]), inputs[1+checkin]]
 def flippersound_playSoundUntilDone(inputs):
-    return ["'"+eval(inputs[0])['name']+"'"]
+    return ["'"+ast.literal_eval(inputs[0])['name']+"'"]
 def flippersound_playSound(inputs):
-    return ["'"+eval(inputs[0])['name']+"'"]
+    return ["'"+ast.literal_eval(inputs[0])['name']+"'"]
 def flippersound_beepForTime(inputs):
     return [int(inputs[0]), float(inputs[1])]
 def flippersound_beep(inputs):
@@ -75,4 +76,4 @@ def flipperdisplay_ultrasonicLightUp(inputs):
     return map(int,inputs[1].split(" "))
 
 def parse(opcode, inputs):
-    return eval(f'{opcode}({inputs})')
+    return ast.literal_eval(f'{opcode}({inputs})')
