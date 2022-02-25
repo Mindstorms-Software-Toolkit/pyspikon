@@ -1,3 +1,5 @@
+DEPRECATED! This code is terrible and glitched, don't use it (planning to fork it). 
+
 # **PySpikon** 
 
 ![](https://img.shields.io/badge/Code-Python-blue?logo=python)
